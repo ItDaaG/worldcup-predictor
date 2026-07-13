@@ -1,5 +1,36 @@
-.csv
-.venv
-.pyc
-.pycache
-.ipynb_checkpoints
+# Python bytecode and cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Jupyter Notebook checkpoints and output
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+.local
+
+# Data files (Prevents committing massive soccer datasets)
+*.csv
+*.xlsx
+*.json
+*.parquet
+*.feather
+*.pkl
+*.pickle
+data/
+artifacts/
+
+# IDEs and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
