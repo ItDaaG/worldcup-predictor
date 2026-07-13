@@ -16,7 +16,7 @@ TOURNAMENT_K_FACTORS = {
 }
 
 
-def get_goal_diff_multiplier(goal_diff):
+def _get_goal_diff_multiplier(goal_diff):
     """
     The official World Football Elo margin-of-victory multiplier.
     """
@@ -32,7 +32,7 @@ def get_goal_diff_multiplier(goal_diff):
         return 1.75 + (abs_diff - 3) / 8.0
 
 
-def get_expected_score(home_elo, away_elo, neutral):
+def _get_expected_score(home_elo, away_elo, neutral):
     """
     Probability of the home team winning, adjusted for home advantage
     unless the match is played at a neutral venue.
@@ -41,7 +41,7 @@ def get_expected_score(home_elo, away_elo, neutral):
     return 1 / (1 + 10 ** ((away_elo - home_adj) / 400))
 
 
-def get_actual_score(home_score, away_score):
+def _get_actual_score(home_score, away_score):
     """
     1 for a home win, 0.5 for a draw, 0 for a home loss.
     """
@@ -53,16 +53,16 @@ def get_actual_score(home_score, away_score):
         return 0.0
 
 
-def update_elo(home_elo, away_elo, home_score, away_score, tournament_type, neutral):
+def _update_elo(home_elo, away_elo, home_score, away_score, tournament_type, neutral):
     """
     Returns the updated (home_elo, away_elo) after a single match.
     """
     k = TOURNAMENT_K_FACTORS.get(tournament_type, TOURNAMENT_K_FACTORS['Friendly'])
     goal_diff = home_score - away_score
-    multiplier = get_goal_diff_multiplier(goal_diff)
+    multiplier = _get_goal_diff_multiplier(goal_diff)
 
-    expected_home = get_expected_score(home_elo, away_elo, neutral)
-    actual_home = get_actual_score(home_score, away_score)
+    expected_home = _get_expected_score(home_elo, away_elo, neutral)
+    actual_home = _get_actual_score(home_score, away_score)
 
     change = k * multiplier * (actual_home - expected_home)
 
@@ -76,9 +76,8 @@ def calculate_elo_ratings(df):
     """
     Runs Elo over the full match history of dataset in chronological order.
     Returns the original dataframe with home_elo/away_elo columns added
-    (ratings BEFORE each match is played.
+    (ratings BEFORE each match is played.)
     """
-    df = df.sort_values('date').reset_index(drop=True)
 
     ratings = {}
     home_elos = []
@@ -91,7 +90,7 @@ def calculate_elo_ratings(df):
         home_elos.append(home_elo)
         away_elos.append(away_elo)
 
-        new_home_elo, new_away_elo = update_elo(
+        new_home_elo, new_away_elo = _update_elo(
             home_elo, away_elo,
             row.home_score, row.away_score,
             row.tournament_type, row.neutral
