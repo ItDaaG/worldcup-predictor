@@ -7,7 +7,7 @@ the match being predicted (no leakage).
 """
 import pandas as pd
 
-ROLLING_WINDOW = 5
+ROLLING_WINDOW = 10
 
 
 def _build_team_long_format(df):
@@ -73,8 +73,11 @@ def add_form_features(df, window=ROLLING_WINDOW):
     away_stats = long_df[~long_df['is_home']][['match_id'] + stat_cols].copy()
     away_stats.columns = ['match_id'] + [f'away_{c}' for c in stat_cols]
 
+    df['elo_diff'] = df['home_elo'] - df['away_elo']
     df = df.merge(home_stats, on='match_id', how='left')
     df = df.merge(away_stats, on='match_id', how='left')
+    df['conceded_goals_diff'] = df['home_average_conceded_goals'] - df['away_average_conceded_goals']
+    df['scored_goals_diff'] = df['home_average_goals_scored'] - df['away_average_goals_scored']
     df = df.drop(columns=['match_id'])
 
     return df
@@ -127,3 +130,16 @@ def add_h2h_feature(df, window=ROLLING_WINDOW):
     df = df.drop(columns=['pair_key'])
 
     return df
+
+
+def categorize_tournament(df):
+    name = str(df['tournament']).lower()
+
+    if 'world cup' in name or 'copa américa' in name or 'euro' in name or 'nations cup' in name:
+        if 'qualification' not in name and 'qualifying' not in name and 'qualifier' not in name:
+            return 'Major Tournament'
+    if 'qualification' in name or 'qualifying' in name or 'qor' in name or 'qualifier' in name:
+        return 'Qualification'
+    if 'friendly' in name:
+        return 'Friendly'
+    return 'Other / Regional Cup'
