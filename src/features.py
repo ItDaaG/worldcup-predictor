@@ -132,8 +132,12 @@ def add_h2h_feature(df, window=ROLLING_WINDOW):
     return df
 
 
-def categorize_tournament(df):
-    name = str(df['tournament']).lower()
+def _categorize_tournament_name(tournament_name):
+    """
+    Buckets a single raw tournament name into a broad category used for
+    Elo K-factor weighting and modeling.
+    """
+    name = str(tournament_name).lower()
 
     if 'world cup' in name or 'copa américa' in name or 'euro' in name or 'nations cup' in name:
         if 'qualification' not in name and 'qualifying' not in name and 'qualifier' not in name:
@@ -143,3 +147,12 @@ def categorize_tournament(df):
     if 'friendly' in name:
         return 'Friendly'
     return 'Other / Regional Cup'
+
+
+def add_tournament_type(df):
+    """
+    Adds a tournament_type column, derived from the tournament column.
+    """
+    df = df.copy()
+    df['tournament_type'] = df['tournament'].apply(_categorize_tournament_name)
+    return df
